@@ -77,7 +77,9 @@ def attention(db: Session) -> dict:
 
 
 def recent_activity(db: Session, limit: int = 12) -> list[dict]:
-    rows = db.scalars(select(AuditEntry).order_by(AuditEntry.seq.desc()).limit(limit))
+    quiet = ("login", "password_failed", "account_locked")
+    rows = db.scalars(select(AuditEntry).where(AuditEntry.action.not_in(quiet))
+                      .order_by(AuditEntry.seq.desc()).limit(limit))
     return [to_jsonable({
         "seq": e.seq, "occurred_at": e.occurred_at, "actor_name": e.actor_name, "action": e.action,
         "entity_type": e.entity_type, "entity_label": e.entity_label,

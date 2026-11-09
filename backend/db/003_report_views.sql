@@ -13,7 +13,7 @@ ORDER BY r.app_version_id, r.test_case_id, r.completed_at DESC, r.id DESC;
 -- 1. Where does each application stand in its validation?
 CREATE VIEW vw_validation_status AS
 WITH working_version AS (
-    SELECT DISTINCT ON (v.application_id) v.*
+    SELECT DISTINCT ON (v.application_id) v.id, v.application_id, v.version, v.status
     FROM app_versions v
     WHERE v.status IN ('in_validation', 'validated')
     ORDER BY v.application_id, (v.status = 'in_validation') DESC, v.id DESC
@@ -80,7 +80,7 @@ SELECT r.application_id,
 FROM requirements r
 JOIN applications a ON a.id = r.application_id
 LEFT JOIN LATERAL (
-    SELECT v2.* FROM app_versions v2
+    SELECT v2.id, v2.version FROM app_versions v2
     WHERE v2.application_id = r.application_id AND v2.status IN ('in_validation', 'validated')
     ORDER BY (v2.status = 'in_validation') DESC, v2.id DESC
     LIMIT 1

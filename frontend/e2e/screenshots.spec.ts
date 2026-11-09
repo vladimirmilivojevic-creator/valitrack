@@ -37,7 +37,9 @@ test("take the README screenshots", async ({ page }) => {
 
   await page.goto("/changes/1");
   await page.getByText("Impact assessment by department").waitFor();
-  await page.screenshot({ ...out("change-control"), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1500 });
+  await page.screenshot(out("change-control"));
+  await page.setViewportSize({ width: 1440, height: 900 });
 
   await page.goto("/training");
   await page.getByText("Training matrix").waitFor();
@@ -54,12 +56,10 @@ test("take the README screenshots", async ({ page }) => {
   await page.getByText("The chain is intact.").waitFor();
   await page.screenshot(out("audit-trail"));
 
-  await page.goto("/changes/1");
-  await page.emulateMedia({ colorScheme: "dark" });
-  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
+  await page.evaluate(() => localStorage.setItem("vt-theme", "dark"));
   await page.goto("/");
-  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
   await page.getByText("Validation lifecycle").waitFor();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.screenshot(out("dashboard-dark"));
 });
 

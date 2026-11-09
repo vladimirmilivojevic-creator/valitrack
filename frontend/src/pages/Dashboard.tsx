@@ -40,7 +40,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid-2">
+      <div className="stack-lg">
         <Panel title="Validation lifecycle" flush>
           {data.board.length === 0 ? (
             <Empty title="No applications yet" />
@@ -53,9 +53,10 @@ export default function Dashboard() {
                     <th>
                       <Term k="GAMP">GAMP</Term>
                     </th>
+                    <th>Risk</th>
                     <th>Live</th>
-                    <th>Working version</th>
-                    <th>Stage</th>
+                    <th>In validation</th>
+                    <th>Lifecycle</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -65,11 +66,12 @@ export default function Dashboard() {
                         <Link className="title" to={`/applications/${row.application_id}`}>
                           {row.name}
                         </Link>
-                        <div className="sub">
-                          <span className="id">{row.code}</span> · <RiskChip level={row.risk_class} />
-                        </div>
+                        <div className="sub id">{row.code}</div>
                       </td>
                       <td>{row.gamp_category}</td>
+                      <td>
+                        <RiskChip level={row.risk_class} />
+                      </td>
                       <td className="mono">{row.live_version ?? "-"}</td>
                       <td className="mono">{row.working_version ?? "-"}</td>
                       <td>
@@ -90,7 +92,7 @@ export default function Dashboard() {
 
         <Panel title="Recent activity" flush>
           <ul className="activity">
-            {data.activity.map((e) => (
+            {data.activity.slice(0, 8).map((e) => (
               <li key={e.seq}>
                 <strong>{e.actor_name}</strong> {titleCase(e.action).toLowerCase()}{" "}
                 <span className="id">{e.entity_label ?? e.entity_type}</span>
@@ -98,7 +100,7 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
-          <p className="small" style={{ padding: "8px 16px 14px" }}>
+          <p className="small" style={{ padding: "8px 16px 14px", margin: 0 }}>
             <Link to="/audit">Open the full audit trail</Link>
           </p>
         </Panel>

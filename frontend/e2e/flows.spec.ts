@@ -10,7 +10,7 @@ test("a visitor can sign in with a demo account and sees the lifecycle board", a
 
 test("the audit trail can be verified", async ({ page }) => {
   await signInAs(page, "Paul Keller");
-  await page.getByRole("link", { name: "Audit trail" }).click();
+  await page.getByLabel("Main").getByRole("link", { name: "Audit trail" }).click();
   await page.getByRole("button", { name: "Verify integrity" }).click();
   await expect(page.getByText("The chain is intact.")).toBeVisible();
 });

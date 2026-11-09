@@ -82,6 +82,14 @@ def baseline_hash(db: Session, application_id: int) -> str:
     return canonical_hash(requirements_baseline(db, application_id))
 
 
+def _count(number: int, singular: str) -> str:
+    return f"{number} {singular}" if number == 1 else f"{number} {singular}s"
+
+
+def _agree(number: int, one: str, many: str) -> str:
+    return one if number == 1 else many
+
+
 def _codes(items: list[str], limit: int = 6) -> str:
     shown = ", ".join(items[:limit])
     return shown + (f" and {len(items) - limit} more" if len(items) > limit else "")
@@ -179,7 +187,8 @@ def evaluate_release_gate(db: Session, version_id: int) -> GateResult:
     checks.append(GateCheck(
         "risk_rated", "Risk assessment complete", not unrated and bool(requirements),
         "Every requirement has a risk rating." if not unrated and requirements
-        else (f"{len(unrated)} requirements have no risk rating: {_codes(unrated)}." if unrated
+        else (f"{_count(len(unrated), 'requirement')} {_agree(len(unrated), 'has', 'have')} no risk rating: "
+              f"{_codes(unrated)}." if unrated
               else "There is nothing to rate yet."),
     ))
 
@@ -193,7 +202,8 @@ def evaluate_release_gate(db: Session, version_id: int) -> GateResult:
     checks.append(GateCheck(
         "coverage", "Every requirement has a test", not uncovered and bool(requirements),
         f"All {len(requirements)} requirements have an approved test." if not uncovered and requirements
-        else (f"{len(uncovered)} of {len(requirements)} requirements have no suitable approved test: "
+        else (f"{len(uncovered)} of {len(requirements)} requirements "
+              f"{_agree(len(uncovered), 'has', 'have')} no suitable approved test: "
               f"{_codes(uncovered)}." if uncovered else "There is nothing to cover yet."),
     ))
 
@@ -238,7 +248,8 @@ def evaluate_release_gate(db: Session, version_id: int) -> GateResult:
     checks.append(GateCheck(
         "reviewed", "High-risk tests reviewed by QA", not unreviewed,
         "Tests of high-risk requirements are reviewed." if not unreviewed
-        else f"{len(unreviewed)} tests wait for QA review: {_codes(unreviewed)}.",
+        else f"{_count(len(unreviewed), 'test')} {_agree(len(unreviewed), 'waits', 'wait')} for QA review: "
+             f"{_codes(unreviewed)}.",
     ))
 
     # 7. No open deviations.
@@ -246,7 +257,8 @@ def evaluate_release_gate(db: Session, version_id: int) -> GateResult:
     checks.append(GateCheck(
         "deviations", "No open deviations", not open_deviations,
         "All deviations are closed or accepted." if not open_deviations
-        else f"{len(open_deviations)} deviations are still open: {_codes(open_deviations)}.",
+        else f"{_count(len(open_deviations), 'deviation')} {_agree(len(open_deviations), 'is', 'are')} still open: "
+             f"{_codes(open_deviations)}.",
     ))
 
     state_hash = _state_hash(current_baseline, facts)
