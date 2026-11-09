@@ -25,7 +25,7 @@ Free plan facts used here: autosuspend after five idle minutes, wake-up in a few
 2. Enter `DATABASE_URL` when asked (the Neon string). `SECRET_KEY` and `DEMO_RESET_TOKEN` are generated.
 3. The free plan sleeps after 15 minutes without traffic, and waking takes about a minute. It has **750 instance hours a month per workspace**,
    which one always-on service just fits (744 hours in a 31-day month). Do not add a second free web service to the same workspace.
-4. Deploys run automatically after the CI checks of the `main` branch pass.
+4. Deploys run automatically on every push to `main`. The CI pipeline runs at the same time; do not merge to `main` when it is red.
 
 | Variable | Meaning |
 |---|---|
