@@ -43,7 +43,7 @@ Free plan facts used here: autosuspend after five idle minutes, wake-up in a few
 - `/api/health` does **not** touch the database. This matters: a monitor that queried the database every five minutes would keep Neon
   awake all day and use up the 100 compute hours. The page `/api/health/db` exists but is not monitored.
 - The nightly reset (cron-job.org, 03:00 Europe/Vienna): `POST /api/demo/reset` with the header `X-Reset-Token: <DEMO_RESET_TOKEN>`.
-  It empties all tables and loads the demo data again, so visitors who changed things do not leave a mess.
+  It answers at once and does the work in the background (cron-job.org waits at most 30 seconds). It empties all tables and loads the demo data again, so visitors who changed things do not leave a mess.
   This is the only code path that may empty the append-only tables, and it exists only when `DEMO_MODE=true`.
 
 ## Running it yourself

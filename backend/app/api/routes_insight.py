@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta
 
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, Response
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
@@ -72,18 +72,25 @@ def demo_accounts(db: Session = Depends(get_db)):
     return {"enabled": True, "password": DEMO_PASSWORD, "accounts": accounts}
 
 
+def _reset_demo() -> None:
+    """Runs after the response was sent, so a caller with a short timeout (a cron service) is not kept waiting."""
+    from app.core.db import SessionLocal
+    from app.seed.demo import reset_and_seed
+
+    with SessionLocal() as session:
+        reset_and_seed(session)
+
+
 @router.post("/demo/reset")
-def demo_reset(db: Session = Depends(get_db), x_reset_token: str | None = Header(default=None)):
+def demo_reset(background: BackgroundTasks, x_reset_token: str | None = Header(default=None)):
     """Wipe the demo and load the sample data again. Only exists in demo mode."""
     settings = get_settings()
     if not settings.demo_mode:
         raise NotFound("This is not a demo installation.")
     if not (settings.demo_reset_token and x_reset_token == settings.demo_reset_token):
         raise Forbidden("The reset token is missing or wrong.")
-    from app.seed.demo import reset_and_seed
-
-    reset_and_seed(db)
-    return {"status": "reset"}
+    background.add_task(_reset_demo)
+    return {"status": "started"}
 
 
 @router.get("/demo/reset-allowed")

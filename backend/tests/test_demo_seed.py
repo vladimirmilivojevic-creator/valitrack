@@ -102,6 +102,6 @@ def test_scheduled_reset_endpoint_reloads_the_demo(db):
     login = client.post("/api/auth/login", json={"username": "eva.qa", "password": DEMO_PASSWORD})
     assert login.status_code == 200
     response = client.post("/api/demo/reset", headers={"X-Reset-Token": "test-reset-token"})
-    assert response.status_code == 200 and response.json() == {"status": "reset"}
+    assert response.status_code == 200 and response.json() == {"status": "started"}
     db.rollback()
     assert db.scalar(select(func.count()).select_from(Application)) == 6
