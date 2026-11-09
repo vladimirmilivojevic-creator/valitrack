@@ -127,15 +127,14 @@ function StepCard({ run, step, editable }: { run: Run; step: RunStep; editable: 
   const act = useAct();
   const [result, setResult] = useState<RunStep["result"]>(step.result);
   const [actual, setActual] = useState(step.actual_result ?? "");
-  const [comment, setComment] = useState(step.comment ?? "");
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
-  const dirty = result !== step.result || actual !== (step.actual_result ?? "") || comment !== (step.comment ?? "");
+  const dirty = result !== step.result || actual !== (step.actual_result ?? "");
 
   async function save() {
     setBusy(true);
     try {
-      await act(() => api.put(`/runs/${run.id}/steps/${step.step_no}`, { result, actual_result: actual || null, comment: comment || null }));
+      await act(() => api.put(`/runs/${run.id}/steps/${step.step_no}`, { result, actual_result: actual || null, comment: step.comment }));
     } finally {
       setBusy(false);
     }

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
+  <title id="title">ValiTrack</title>
+  <desc id="desc">ValiTrack: software validation and change control tracker</desc>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="360" fill="#14171a"/>
+  <rect width="1280" height="360" fill="url(#grid)"/>
+  <rect x="0" y="0" width="12" height="360" fill="#c60c30"/>
+
+  <!-- mark -->
+  <g transform="translate(88 96)">
+    <rect width="76" height="76" rx="19" fill="#f6f4f1"/>
+    <path d="M19 40l13 13L59 25" fill="none" stroke="#14171a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="62" cy="14" r="9" fill="#c60c30"/>
+  </g>
+
+  <g font-family="'Source Sans 3','Segoe UI','Helvetica Neue',Arial,sans-serif" fill="#f6f4f1">
+    <text x="190" y="152" font-size="76" font-weight="700" letter-spacing="-2">ValiTrack</text>
+    <text x="92" y="228" font-size="30" font-weight="400" fill="#d9d5ce">Prove that your software does what it should,</text>
+    <text x="92" y="268" font-size="30" font-weight="400" fill="#d9d5ce">and keep proving it while it changes.</text>
+  </g>
+
+  <g font-family="'JetBrains Mono',Consolas,'Courier New',monospace" font-size="17" fill="#f6f4f1">
+    <g transform="translate(92 306)">
+      <rect width="132" height="32" rx="16" fill="none" stroke="#6a7075"/>
+      <text x="66" y="21" text-anchor="middle">GAMP 5</text>
+    </g>
+    <g transform="translate(240 306)">
+      <rect width="148" height="32" rx="16" fill="none" stroke="#6a7075"/>
+      <text x="74" y="21" text-anchor="middle">IQ / OQ / PQ</text>
+    </g>
+    <g transform="translate(404 306)">
+      <rect width="196" height="32" rx="16" fill="none" stroke="#6a7075"/>
+      <text x="98" y="21" text-anchor="middle">e-signatures</text>
+    </g>
+    <g transform="translate(616 306)">
+      <rect width="226" height="32" rx="16" fill="none" stroke="#6a7075"/>
+      <text x="113" y="21" text-anchor="middle">hash-chained audit</text>
+    </g>
+  </g>
+
+  <!-- the lifecycle on the right, drawn as a trace -->
+  <g transform="translate(880 96)" font-family="'Source Sans 3','Segoe UI',Arial,sans-serif" font-size="16" fill="#d9d5ce">
+    <g stroke="#6a7075" stroke-width="2">
+      <line x1="10" y1="12" x2="10" y2="196"/>
+    </g>
+    <g fill="#f6f4f1">
+      <circle cx="10" cy="12" r="8"/>
+      <circle cx="10" cy="58" r="8"/>
+      <circle cx="10" cy="104" r="8"/>
+      <circle cx="10" cy="150" r="8"/>
+    </g>
+    <circle cx="10" cy="196" r="10" fill="#c60c30"/>
+    <text x="34" y="18">Requirements and risk</text>
+    <text x="34" y="64">Test cases and traceability</text>
+    <text x="34" y="110">Execution with evidence</text>
+    <text x="34" y="156">Report, approval, release</text>
+    <text x="34" y="202" fill="#f6f4f1" font-weight="700">Validated</text>
+  </g>
+</svg>

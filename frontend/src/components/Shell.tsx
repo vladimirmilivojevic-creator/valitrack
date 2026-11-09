@@ -54,7 +54,9 @@ function useTheme() {
   return { theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) };
 }
 
-const NAV = [
+type NavItem = { to: string; label: string; icon: typeof Users; end?: boolean };
+
+const NAV: { group: string; items: NavItem[] }[] = [
   { group: "Overview", items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard, end: true }] },
   {
     group: "Validate",
