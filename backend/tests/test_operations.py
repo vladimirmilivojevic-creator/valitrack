@@ -3,13 +3,13 @@
 from datetime import date
 
 import pytest
-from conftest import PASSWORD
-from helpers import execute, full_setup, validate
 from sqlalchemy import text
 
 from app.core.errors import Conflict, Forbidden, Invalid
 from app.models import Deviation, TrainingRecord
 from app.services import applications, dashboard, deviations, support, training
+from conftest import PASSWORD
+from helpers import execute, full_setup, validate
 
 
 @pytest.fixture

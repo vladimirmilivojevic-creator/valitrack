@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select, text
 
+from app.main import app
 from app.models import (
     Application,
     AppVersion,
@@ -14,7 +15,6 @@ from app.models import (
     User,
 )
 from app.seed.demo import DEMO_LOGINS, DEMO_PASSWORD, reset_and_seed, seed_if_empty
-from app.main import app
 from app.services import dashboard
 from app.services.gate import evaluate_release_gate
 

@@ -2,13 +2,13 @@ import hashlib
 import io
 
 import pytest
-from conftest import PASSWORD
-from helpers import approve_all, approve_report, execute_all, full_setup, validate
 from pypdf import PdfReader
 
 from app.models import ReportDocument
 from app.reports.pdf import append_page, build_approval_page, build_report_pdf
 from app.services import report_docs, reports
+from conftest import PASSWORD
+from helpers import approve_all, approve_report, execute_all, full_setup, validate
 
 
 def pdf_text(data: bytes) -> str:
