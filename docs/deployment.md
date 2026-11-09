@@ -9,7 +9,6 @@ flowchart LR
     R -->|SQL over TLS| N[(Neon PostgreSQL<br/>free plan)]
     M1[UptimeRobot<br/>every 5 minutes] -.->|GET /api/health| R
     M2[cron-job.org<br/>every 10 minutes] -.->|GET /api/health| R
-    M2 -.->|POST /api/demo/reset<br/>every night, with token| R
 ```
 
 ## 1. Database on Neon
@@ -32,7 +31,8 @@ Free plan facts used here: autosuspend after five idle minutes, wake-up in a few
 |---|---|
 | `DATABASE_URL` | Neon connection string |
 | `SECRET_KEY` | Signs the session cookies |
-| `DEMO_MODE` | `true` shows the demo accounts on the login page, shortens the lockout and enables the nightly reset |
+| `DEMO_MODE` | `true` shows the demo accounts on the login page, shortens the lockout and turns on the nightly reset |
+| `DEMO_AUTO_RESET` | `true` by default. Set `false` to switch the nightly reset off |
 | `DEMO_RESET_TOKEN` | Secret for `POST /api/demo/reset` |
 | `COOKIE_SECURE` | `true` on HTTPS |
 
@@ -42,9 +42,11 @@ Free plan facts used here: autosuspend after five idle minutes, wake-up in a few
 - **cron-job.org** as a second, independent pinger, every 10 minutes, same URL.
 - `/api/health` does **not** touch the database. This matters: a monitor that queried the database every five minutes would keep Neon
   awake all day and use up the 100 compute hours. The page `/api/health/db` exists but is not monitored.
-- The nightly reset (cron-job.org, 03:00 Europe/Vienna): `POST /api/demo/reset` with the header `X-Reset-Token: <DEMO_RESET_TOKEN>`.
-  It answers at once and does the work in the background (cron-job.org waits at most 30 seconds). It empties all tables and loads the demo data again, so visitors who changed things do not leave a mess.
-  This is the only code path that may empty the append-only tables, and it exists only when `DEMO_MODE=true`.
+- **Nightly reset.** The app resets its own demo data. A background thread checks every ten minutes and, between 03:00 and 05:00
+  Vienna time, reloads the demo data once per day (it compares today's date with the time the data was loaded). It needs no external job and no secret.
+  Visitors who changed things do not leave a mess, and the monitors keep the app awake so it is there at night.
+  The reset empties the append-only tables, which is allowed only here: the code path exists only when `DEMO_MODE=true`.
+- A reset can also be started by hand: `POST /api/demo/reset` with the header `X-Reset-Token: <DEMO_RESET_TOKEN>`. It answers at once and works in a background thread.
 
 ## Running it yourself
 

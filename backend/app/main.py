@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -15,6 +16,7 @@ from app.api import (
 )
 from app.core.config import BACKEND_DIR, get_settings
 from app.core.errors import DomainError
+from app.services import demo_scheduler
 
 API_DESCRIPTION = (
     "ValiTrack API. Software validation and change control tracker: applications, requirements and risk, "
@@ -22,10 +24,16 @@ API_DESCRIPTION = (
 )
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    demo_scheduler.start_scheduler()  # does nothing unless this is a demo installation
+    yield
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title="ValiTrack", version="1.0.0", description=API_DESCRIPTION,
-        docs_url="/api/docs", redoc_url=None, openapi_url="/api/openapi.json",
+        docs_url="/api/docs", redoc_url=None, openapi_url="/api/openapi.json", lifespan=lifespan,
     )
 
     @app.exception_handler(DomainError)

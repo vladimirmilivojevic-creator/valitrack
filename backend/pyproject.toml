@@ -16,6 +16,7 @@ dependencies = [
     "reportlab>=4.2",
     "pypdf>=4.2",
     "python-multipart>=0.0.9",
+    "tzdata>=2024.1",
 ]
 
 [project.optional-dependencies]

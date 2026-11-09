@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     secret_key: str = "dev-only-secret-change-me"
     demo_mode: bool = False
     demo_reset_token: str = ""
+    demo_auto_reset: bool = True  # the app resets its own demo data at night (only in demo mode)
     cookie_secure: bool = False
 
     session_minutes: int = 30

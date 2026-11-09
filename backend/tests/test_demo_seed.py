@@ -1,5 +1,7 @@
 """The demo data must load through the services, keep the audit chain valid and tell the planned story."""
 
+import threading
+
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select, text
 
@@ -103,5 +105,31 @@ def test_scheduled_reset_endpoint_reloads_the_demo(db):
     assert login.status_code == 200
     response = client.post("/api/demo/reset", headers={"X-Reset-Token": "test-reset-token"})
     assert response.status_code == 200 and response.json() == {"status": "started"}
+    for thread in threading.enumerate():  # the reset runs in its own thread: wait for it
+        if thread.name == "demo-reset":
+            thread.join(timeout=120)
     db.rollback()
     assert db.scalar(select(func.count()).select_from(Application)) == 6
+
+
+def test_the_app_resets_its_own_demo_only_at_night_and_only_once_a_day(db, people):
+    from datetime import timedelta
+
+    from app.models import AuditEntry
+    from app.services.demo_scheduler import VIENNA, needs_reset
+    from helpers import make_application
+
+    make_application(db, people)
+    loaded = db.scalar(select(func.min(AuditEntry.occurred_at))).astimezone(VIENNA)
+    next_night = (loaded + timedelta(days=1)).replace(hour=3, minute=30)
+    assert needs_reset(db, next_night) is True
+    assert needs_reset(db, next_night.replace(hour=12)) is False  # daytime: leave the visitors alone
+    assert needs_reset(db, loaded.replace(hour=3, minute=30)) is False  # data from today is fresh enough
+
+
+def test_an_empty_database_is_left_to_the_start_script(db):
+    from datetime import datetime
+
+    from app.services.demo_scheduler import VIENNA, needs_reset
+
+    assert needs_reset(db, datetime(2026, 11, 10, 3, 30, tzinfo=VIENNA)) is False

@@ -8,6 +8,7 @@ os.environ["SECRET_KEY"] = "test-secret-key-for-the-automated-tests"
 os.environ["FAST_HASHING"] = "true"
 os.environ["DEMO_MODE"] = "true"
 os.environ["DEMO_RESET_TOKEN"] = "test-reset-token"
+os.environ["DEMO_AUTO_RESET"] = "false"
 
 import pytest  # noqa: E402
 from alembic.config import Config  # noqa: E402
