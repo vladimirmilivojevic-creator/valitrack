@@ -26,7 +26,7 @@ def test_database_and_python_calculate_the_same_risk(db, people):
     application, _ = make_application(db, people)
     for s, p, d in itertools.product((1, 2, 3), repeat=3):
         requirements.create_requirement(db, people.ve, application, {
-            "title": f"S{s} P{p} D{d}", "description": "x", "severity": s, "probability": p, "detectability": d})
+            "title": f"S{s} P{p} D{d}", "description": "Works as specified", "severity": s, "probability": p, "detectability": d})
     db.commit()
     rows = db.scalars(select(Requirement).where(Requirement.application_id == application.id)).all()
     assert len(rows) == 27
@@ -37,7 +37,7 @@ def test_database_and_python_calculate_the_same_risk(db, people):
 
 def test_unrated_requirement_has_no_risk_level(db, people):
     application, _ = make_application(db, people)
-    requirement = requirements.create_requirement(db, people.ve, application, {"title": "T", "description": "D"})
+    requirement = requirements.create_requirement(db, people.ve, application, {"title": "No rating", "description": "No rating yet"})
     db.commit()
     assert requirement.risk_level is None and requirement.rpn is None
 

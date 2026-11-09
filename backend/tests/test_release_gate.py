@@ -45,7 +45,7 @@ def test_a_requirement_without_a_test_is_named(db, people):
 
 def test_unrated_requirements_block_the_gate_and_the_urs_approval(db, people):
     application, version = make_application(db, people)
-    requirements.create_requirement(db, people.ve, application, {"title": "No rating", "description": "x"})
+    requirements.create_requirement(db, people.ve, application, {"title": "No rating", "description": "No rating yet"})
     db.commit()
     _, by_key = checks(db, version)
     assert not by_key["risk_rated"].passed

@@ -89,7 +89,7 @@ def test_ticket_lifecycle(api, people, live):
 
 def test_a_ticket_can_link_a_change_of_the_same_application(db, people, live):
     ticket = support.create_ticket(db, people.tester, {
-        "application_id": live.application.id, "summary": "s", "description": "d", "category": "defect"})
+        "application_id": live.application.id, "summary": "A problem", "description": "Details of the problem", "category": "defect"})
     db.commit()
     with pytest.raises(Invalid):
         support.update_ticket(db, people.ve, ticket, {"change_id": 999})

@@ -1,31 +1,45 @@
 """Login, sessions, CSRF protection and the rule that nothing changes without the right permission."""
 
+import re
+
 import pytest
-from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
+from app.core.db import get_db
 from app.main import app
 from conftest import PASSWORD
 
 CHANGING = {"POST", "PUT", "PATCH", "DELETE"}
+OPEN_PATHS = {"/api/health", "/api/health/db", "/api/auth/login", "/api/auth/logout", "/api/demo/accounts",
+              "/api/demo/reset", "/api/docs", "/api/openapi.json"}
+
+
+def operations():
+    """Every (method, path) of the API, read from its OpenAPI description."""
+    found = []
+    for path, methods in app.openapi()["paths"].items():
+        for method in methods:
+            if method.upper() in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
+                found.append((method.upper(), path))
+    return found
+
+
+def fill(path: str) -> str:
+    """Replace {placeholders} with values that do not exist, so no real data is touched."""
+    special = {"department": "IT", "key": "validation-status"}
+    return re.sub(r"\{(\w+)\}", lambda m: special.get(m.group(1), "1"), path)
 
 
 def test_every_data_route_needs_a_login(people):
     client = TestClient(app)
-    open_routes = {"/api/health", "/api/health/db", "/api/auth/login", "/api/auth/logout", "/api/demo/accounts",
-                   "/api/demo/reset", "/api/docs", "/api/openapi.json"}
-    for route in app.routes:
-        if not isinstance(route, APIRoute) or route.path in open_routes or not route.path.startswith("/api"):
+    checked = 0
+    for method, path in operations():
+        if path in OPEN_PATHS or not path.startswith("/api"):
             continue
-        method = sorted(route.methods - {"HEAD", "OPTIONS"})[0]
-        path = route.path.replace("{key}", "validation-status")
-        for name in ("application_id", "version_id", "test_case_id", "requirement_id", "run_id", "step_no",
-                     "change_id", "deviation_id", "document_id", "evidence_id", "item_id", "session_id",
-                     "ticket_id", "user_id"):
-            path = path.replace("{" + name + "}", "1")
-        path = path.replace("{department}", "IT")
-        response = client.request(method, path, json={} if method in CHANGING else None)
-        assert response.status_code == 401, f"{method} {route.path} answered {response.status_code} without a login"
+        response = client.request(method, fill(path), json={} if method in CHANGING else None)
+        assert response.status_code == 401, f"{method} {path} answered {response.status_code} without a login"
+        checked += 1
+    assert checked > 60
 
 
 def test_a_changing_request_without_the_csrf_token_is_refused(people):
@@ -76,29 +90,21 @@ def test_the_auditor_cannot_change_anything(people, api):
     auditor = api("auditor")
     skipped = {"/api/auth/login", "/api/auth/logout", "/api/auth/change-password", "/api/demo/reset"}
     checked = 0
-    for route in app.routes:
-        if not isinstance(route, APIRoute) or route.path in skipped or not route.path.startswith("/api"):
+    for method, path in operations():
+        if method not in CHANGING or path in skipped:
             continue
-        for method in sorted(route.methods & CHANGING):
-            path = route.path
-            for name in ("application_id", "version_id", "test_case_id", "requirement_id", "run_id", "step_no",
-                         "change_id", "deviation_id", "document_id", "item_id", "session_id", "ticket_id",
-                         "user_id"):
-                path = path.replace("{" + name + "}", "1")
-            path = path.replace("{department}", "IT")
-            if method == "DELETE":
-                path += "?reason=testing+the+rules"
-            response = auditor.call(method, path, json={})
-            assert response.status_code >= 400, f"{method} {route.path} was allowed for the auditor"
-            checked += 1
+        url = fill(path) + ("?reason=testing+the+rules" if method == "DELETE" else "")
+        response = auditor.call(method, url, json={})
+        assert response.status_code >= 400, f"{method} {path} was allowed for the auditor"
+        checked += 1
     assert checked > 40
 
 
-def test_a_tester_cannot_write_requirements_or_approve(people, api):
+def test_a_tester_cannot_write_requirements_or_manage_users(people, api):
     tester = api("tester")
     assert tester.post("/api/applications/1/requirements",
-                       json={"title": "t", "description": "d"}).status_code in (403, 404)
-    assert tester.post("/api/users", json={"username": "x", "full_name": "x", "email": "x@example.com",
+                       json={"title": "Title", "description": "Description"}).status_code in (403, 404)
+    assert tester.post("/api/users", json={"username": "x.y", "full_name": "X Y", "email": "x@example.com",
                                            "role": "admin", "department": "IT",
                                            "password": "Some-Password-12"}).status_code == 403
 
@@ -109,10 +115,17 @@ def test_users_list_never_contains_password_hashes(people, api):
 
 
 def test_health_does_not_touch_the_database():
-    """The uptime monitor calls this often. It must stay independent of the database."""
-    route = next(r for r in app.routes if isinstance(r, APIRoute) and r.path == "/api/health")
-    assert route.dependant.dependencies == []
-    assert TestClient(app).get("/api/health").json() == {"status": "ok"}
+    """The uptime monitor calls this often. It must keep working, and must not wake the database."""
+
+    def broken_database():
+        raise RuntimeError("the database must not be used")
+        yield  # pragma: no cover
+
+    app.dependency_overrides[get_db] = broken_database
+    try:
+        assert TestClient(app).get("/api/health").json() == {"status": "ok"}
+    finally:
+        app.dependency_overrides.clear()
     assert TestClient(app).get("/api/health/db").json()["database"] == "reachable"
 
 

@@ -87,14 +87,14 @@ def test_lifecycle_from_new_application_to_validated_version(db, people, api):
 def test_segregation_of_duties_is_enforced_over_the_api(people, api, db):
     ve, qa, tester = api("ve"), api("qa"), api("tester")
     app = ve.post("/api/applications", json={
-        "name": "SoD App", "description": "d", "vendor": "v", "department": "IT", "owner_id": people.owner.id,
-        "gamp_category": 3, "intended_use": "u", "initial_version": "1.0"}).json()
+        "name": "SoD App", "description": "Description", "vendor": "Vendor", "department": "IT", "owner_id": people.owner.id,
+        "gamp_category": 3, "intended_use": "Testing", "initial_version": "1.0"}).json()
     version_id = app["working_version"]["id"]
     req = ve.post(f"/api/applications/{app['id']}/requirements", json={
-        "title": "t", "description": "d", "severity": 1, "probability": 1, "detectability": 1}).json()
+        "title": "Title", "description": "Description", "severity": 1, "probability": 1, "detectability": 1}).json()
     test = ve.post(f"/api/applications/{app['id']}/test-cases", json={
-        "test_type": "IQ", "title": "t", "objective": "o", "requirement_ids": [req["id"]],
-        "steps": [{"action": "a", "expected_result": "e"}]}).json()
+        "test_type": "IQ", "title": "Title", "objective": "Objective", "requirement_ids": [req["id"]],
+        "steps": [{"action": "Act", "expected_result": "Expect"}]}).json()
     # the author cannot approve their own test case, the tester cannot approve at all
     assert ve.post(f"/api/test-cases/{test['id']}/approve", json={"password": PASSWORD}).status_code == 403
     assert tester.post(f"/api/test-cases/{test['id']}/approve", json={"password": PASSWORD}).status_code == 403
@@ -115,14 +115,14 @@ def test_segregation_of_duties_is_enforced_over_the_api(people, api, db):
 def test_evidence_rules(people, api):
     ve, qa, tester = api("ve"), api("qa"), api("tester")
     app = ve.post("/api/applications", json={
-        "name": "Evidence App", "description": "d", "vendor": "v", "department": "IT", "owner_id": people.owner.id,
-        "gamp_category": 1, "intended_use": "u", "initial_version": "1.0"}).json()
+        "name": "Evidence App", "description": "Description", "vendor": "Vendor", "department": "IT", "owner_id": people.owner.id,
+        "gamp_category": 1, "intended_use": "Testing", "initial_version": "1.0"}).json()
     version_id = app["working_version"]["id"]
     req = ve.post(f"/api/applications/{app['id']}/requirements", json={
-        "title": "t", "description": "d", "severity": 1, "probability": 1, "detectability": 1}).json()
+        "title": "Title", "description": "Description", "severity": 1, "probability": 1, "detectability": 1}).json()
     test = ve.post(f"/api/applications/{app['id']}/test-cases", json={
-        "test_type": "IQ", "title": "t", "objective": "o", "requirement_ids": [req["id"]],
-        "steps": [{"action": "a", "expected_result": "e"}]}).json()
+        "test_type": "IQ", "title": "Title", "objective": "Objective", "requirement_ids": [req["id"]],
+        "steps": [{"action": "Act", "expected_result": "Expect"}]}).json()
     qa.post(f"/api/versions/{version_id}/approve-urs", json={"password": PASSWORD})
     qa.post(f"/api/test-cases/{test['id']}/approve", json={"password": PASSWORD})
     run = tester.post("/api/runs", json={"test_case_id": test["id"], "version_id": version_id}).json()
@@ -150,7 +150,7 @@ def test_evidence_rules(people, api):
 def test_ratings_outside_one_to_three_are_refused(people, api, bad):
     ve = api("ve")
     app = ve.post("/api/applications", json={
-        "name": "Rating App", "description": "d", "vendor": "v", "department": "IT", "owner_id": people.owner.id,
-        "gamp_category": 3, "intended_use": "u"}).json()
-    response = ve.post(f"/api/applications/{app['id']}/requirements", json={"title": "t", "description": "d", **bad})
+        "name": "Rating App", "description": "Description", "vendor": "Vendor", "department": "IT", "owner_id": people.owner.id,
+        "gamp_category": 3, "intended_use": "Testing"}).json()
+    response = ve.post(f"/api/applications/{app['id']}/requirements", json={"title": "Title", "description": "Description", **bad})
     assert response.status_code == 422
