@@ -1,0 +1,39 @@
+ValiTrack Source-Available License (View Only)
+
+Copyright (c) 2026 Vladimir Milivojevic. All rights reserved.
+
+1. Permission to view
+
+   You may read the source code in this repository and use the hosted demo
+   for one purpose only: to evaluate the author's work, for example during
+   a job application or a hiring review.
+
+2. Everything else is reserved
+
+   Without the prior written permission of the author, you may not:
+
+   - copy, reproduce, modify, adapt or translate the code, the database
+     design, the documentation, the design or any other part of this project;
+   - distribute, publish, sublicense, sell, rent or lease any part of it;
+   - use any part of it in your own projects, products, services, courses or
+     other material, whether commercial or not;
+   - use it to train or fine-tune machine learning models;
+   - remove or change this notice.
+
+3. GitHub
+
+   This repository is public so that it can be read. The GitHub Terms of
+   Service let GitHub users view and fork public repositories inside the
+   GitHub platform. That permission comes from GitHub, not from the author,
+   and it does not give you any other right under this license.
+
+4. No warranty
+
+   The software is provided "as is", without warranty of any kind. It is a
+   demonstration project and has not been validated for use in a regulated
+   environment.
+
+5. Contact
+
+   To ask for permission, contact the author through the GitHub profile
+   github.com/vladimirmilivojevic-creator.
