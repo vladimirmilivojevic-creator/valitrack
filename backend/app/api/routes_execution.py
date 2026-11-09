@@ -16,8 +16,12 @@ router = APIRouter(prefix="/api", tags=["execution"])
 
 @router.get("/runs")
 def list_runs(version_id: int | None = None, test_case_id: int | None = None, change_id: int | None = None,
-              status: str | None = None, _: User = Depends(current_user), db: Session = Depends(get_db)):
+              application_id: int | None = None, status: str | None = None, _: User = Depends(current_user),
+              db: Session = Depends(get_db)):
     query = select(TestRun).order_by(TestRun.id.desc()).limit(300)
+    if application_id:
+        query = query.join(TestCase, TestCase.id == TestRun.test_case_id).where(
+            TestCase.application_id == application_id)
     if version_id:
         query = query.where(TestRun.app_version_id == version_id)
     if test_case_id:

@@ -9,6 +9,7 @@ from app.models import (
     Application,
     ApplicationUser,
     AppVersion,
+    ChangeRequest,
     TrainingRecord,
     User,
 )
@@ -167,6 +168,9 @@ def release_version(db: Session, user: User, password: str, version: AppVersion,
     require_permission(user, "change.release")
     if version.status != "in_validation":
         raise Conflict("Only a version that is in validation can be released.")
+    change = db.scalar(select(ChangeRequest).where(ChangeRequest.target_version_id == version.id))
+    if change is not None and change.status != "cancelled":
+        raise Conflict(f"This version belongs to change {change.code}. Release it from the change request.")
     application = db.get(Application, version.application_id)
     gate = evaluate_release_gate(db, version.id)
     if not gate.passed:

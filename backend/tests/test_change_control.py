@@ -240,3 +240,13 @@ def test_regression_set_only_offers_approved_tests(db, people, live):
     changes.approve(db, people.qa, PASSWORD, change)
     with pytest.raises(Invalid):
         changes.start_testing(db, people.ve, change, [99999])
+
+
+def test_a_version_of_a_change_cannot_be_released_around_the_change(db, people, live):
+    change = to_pending_approval(db, people, live)
+    changes.approve(db, people.qa, PASSWORD, change)
+    db.commit()
+    target = db.get(AppVersion, change.target_version_id)
+    with pytest.raises(Conflict) as error:
+        applications.release_version(db, people.qa, PASSWORD, target)
+    assert change.code in error.value.message
