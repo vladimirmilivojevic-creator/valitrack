@@ -24,14 +24,14 @@ router = APIRouter(prefix="/api", tags=["insight"])
 
 # ---------------------------------------------------------------- health (used by the uptime monitor)
 
-@router.get("/health")
+@router.api_route("/health", methods=["GET", "HEAD"])
 def health():
     """No database access on purpose: the uptime monitor calls this every few minutes and must not keep a
     serverless database awake all day."""
     return {"status": "ok"}
 
 
-@router.get("/health/db")
+@router.api_route("/health/db", methods=["GET", "HEAD"])
 def health_db(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
     return {"status": "ok", "database": "reachable"}

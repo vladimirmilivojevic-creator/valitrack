@@ -129,6 +129,12 @@ def test_health_does_not_touch_the_database():
     assert TestClient(app).get("/api/health/db").json()["database"] == "reachable"
 
 
+def test_uptime_monitors_may_use_head_requests():
+    """Many monitors check with HEAD. A 405 would make a healthy service look down."""
+    assert TestClient(app).head("/api/health").status_code == 200
+    assert TestClient(app).head("/api/health/db").status_code == 200
+
+
 def test_demo_accounts_are_listed_in_demo_mode(people):
     response = TestClient(app).get("/api/demo/accounts").json()
     assert response["enabled"] is True and response["password"]
