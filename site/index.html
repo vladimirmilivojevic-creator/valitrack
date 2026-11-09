@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ValiTrack: starting the demo</title>
+    <meta name="description" content="ValiTrack demo: the free server is waking up. You will be taken to the app in a moment." />
+    <meta name="theme-color" content="#14171a" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='7' fill='%2314171a'/%3E%3Cpath d='M8 16.5l5.2 5.2L24 10.5' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='24.5' cy='8' r='3.2' fill='%23c60c30'/%3E%3C/svg%3E" />
+    <style>
+      :root { --ink: #14171a; --paper: #f6f4f1; --accent: #c60c30; --muted: #9a9fa5; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px;
+        background: var(--ink); color: var(--paper);
+        font: 17px/1.55 "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+      main { width: 100%; max-width: 520px; }
+      .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+      h1 { margin: 0 0 6px; font-size: 32px; line-height: 1.15; letter-spacing: -0.03em; }
+      p { margin: 0 0 14px; color: #d3cfc8; }
+      .rule { width: 56px; height: 4px; background: var(--accent); margin: 18px 0 22px; }
+      .bar { height: 6px; background: #2a2f35; border-radius: 3px; overflow: hidden; margin: 26px 0 10px; }
+      .bar span { display: block; height: 100%; width: 35%; background: var(--paper); border-radius: 3px; animation: slide 1.6s ease-in-out infinite; }
+      .done .bar span { animation: none; width: 100%; background: #55c28a; }
+      .status { font-size: 15px; color: var(--muted); min-height: 24px; }
+      .status b { color: var(--paper); font-variant-numeric: tabular-nums; }
+      a.button {
+        display: inline-block; margin-top: 18px; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 650;
+        background: var(--paper); color: var(--ink);
+      }
+      a.link { color: var(--muted); font-size: 15px; margin-left: 14px; }
+      small { display: block; margin-top: 34px; color: var(--muted); font-size: 14px; }
+      @keyframes slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(300%); } }
+      @media (prefers-reduced-motion: reduce) { .bar span { animation: none; width: 60%; } }
+    </style>
+  </head>
+  <body>
+    <main id="main">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="28" rx="7" fill="#f6f4f1" />
+          <path d="M8 16.5l5.2 5.2L24 10.5" fill="none" stroke="#14171a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="24.5" cy="8" r="3.2" fill="#c60c30" />
+        </svg>
+        ValiTrack
+      </div>
+
+      <h1 id="title">Starting the demo</h1>
+      <div class="rule"></div>
+      <p id="text">
+        The demo runs on a free server that sleeps when nobody uses it. It is waking up now, which takes up to a minute.
+        You will be taken to the app automatically.
+      </p>
+
+      <div class="bar" role="progressbar" aria-label="Starting the server"><span></span></div>
+      <div class="status" id="status" role="status" aria-live="polite">Waiting for the server... <b id="seconds">0</b> s</div>
+
+      <a class="button" id="open" href="https://valitrack.onrender.com/login">Open the demo now</a>
+      <a class="link" href="https://github.com/vladimirmilivojevic-creator/valitrack">Source code</a>
+
+      <small>The data in the demo is invented. It is not validated for real GxP use.</small>
+    </main>
+
+    <script>
+      (function () {
+        var APP = "https://valitrack.onrender.com";
+        var started = Date.now();
+        var main = document.getElementById("main");
+        var secondsEl = document.getElementById("seconds");
+        var statusEl = document.getElementById("status");
+        var titleEl = document.getElementById("title");
+        var textEl = document.getElementById("text");
+        var finished = false;
+
+        setInterval(function () {
+          if (!finished) secondsEl.textContent = Math.floor((Date.now() - started) / 1000);
+        }, 500);
+
+        function ready() {
+          finished = true;
+          main.className = "done";
+          titleEl.textContent = "The demo is ready";
+          textEl.textContent = "Taking you to the app.";
+          statusEl.textContent = "Ready after " + Math.floor((Date.now() - started) / 1000) + " s";
+          setTimeout(function () { location.href = APP + "/login"; }, 700);
+        }
+
+        function check() {
+          if (finished) return;
+          var controller = new AbortController();
+          var timer = setTimeout(function () { controller.abort(); }, 9000);
+          fetch(APP + "/api/health", { cache: "no-store", signal: controller.signal })
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (body) {
+              clearTimeout(timer);
+              if (body && body.status === "ok") { ready(); return; }
+              setTimeout(check, 3000);
+            })
+            .catch(function () {
+              clearTimeout(timer);
+              if (Date.now() - started > 180000) {
+                statusEl.textContent = "This takes longer than usual. Press the button to open the demo anyway.";
+                return;
+              }
+              setTimeout(check, 3000);
+            });
+        }
+        check();
+      })();
+    </script>
+  </body>
+</html>

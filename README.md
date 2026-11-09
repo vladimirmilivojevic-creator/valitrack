@@ -17,7 +17,7 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 
-**[Live demo](https://valitrack.onrender.com)** &nbsp;·&nbsp;
+**[Live demo](https://vladimirmilivojevic-creator.github.io/valitrack/)** &nbsp;·&nbsp;
 **[Sign-in accounts](#try-it-in-60-seconds)** &nbsp;·&nbsp;
 **[Screenshots](#screenshots)** &nbsp;·&nbsp;
 **[How it works](#how-it-works)** &nbsp;·&nbsp;
@@ -25,8 +25,9 @@
 
 </div>
 
-> The live demo runs on a free server that sleeps at night (about 23:00 to 06:30 Vienna time) to stay inside the free hours.
-> The first page after a pause can take up to a minute to open. After that it is fast. All data in it is invented.
+> The live demo runs on a free server. It stays awake on weekdays from 07:00 to 19:00 (Vienna time) and sleeps otherwise.
+> The link above opens a small page that wakes the server and then takes you to the app, which can take up to a minute.
+> All data in it is invented. Direct link to the app: [valitrack.onrender.com](https://valitrack.onrender.com).
 
 ---
 
@@ -46,7 +47,7 @@ ValiTrack keeps that proof in one place and **refuses to let a version go live w
 
 ## Try it in 60 seconds
 
-Open the [live demo](https://valitrack.onrender.com) and click a person. There is no registration.
+Open the [live demo](https://vladimirmilivojevic-creator.github.io/valitrack/) and click a person. There is no registration.
 
 | Click | Role | What this person can do |
 |---|---|---|
@@ -209,7 +210,7 @@ cd frontend && npm ci && npm test && npx playwright test
   backups with restore tests, single sign-on. See [docs/deployment.md](docs/deployment.md).
 - The hash chain shows that a row was changed or removed in the middle. Removing the newest rows can only be noticed
   by comparing the latest hash with a copy stored elsewhere.
-- Free hosting means a slow first request after a long pause.
+- Free hosting means a slow first request after a long pause. A small page on GitHub Pages wakes the server and shows the progress.
 
 ## License
 

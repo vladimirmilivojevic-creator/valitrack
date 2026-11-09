@@ -7,7 +7,8 @@ the free server awake. Free tiers change, so check the current limits before you
 flowchart LR
     G[GitHub<br/>main branch] -->|CI passes| R[Render web service<br/>Docker, free plan]
     R -->|SQL over TLS| N[(Neon PostgreSQL<br/>free plan)]
-    M[cron-job.org<br/>every 10 minutes, 06:30 to 22:50] -.->|GET /api/health| R
+    M[cron-job.org<br/>weekdays 07:00 to 19:00] -.->|GET /api/health| R
+    W[GitHub Pages<br/>waking-up page] -.->|GET /api/health| R
 ```
 
 ## 1. Database on Neon
@@ -35,15 +36,24 @@ Free plan facts used here: autosuspend after five idle minutes, wake-up in a few
 | `DEMO_RESET_TOKEN` | Secret for `POST /api/demo/reset` |
 | `COOKIE_SECURE` | `true` on HTTPS |
 
-## 3. Keeping it awake
+## 3. Keeping it awake (and staying inside the free hours)
 
-- **cron-job.org**, `GET https://<your-service>.onrender.com/api/health`, every 10 minutes, **only from 06:30 to 22:50** (cron `*/10 6-22 * * *`, time zone Europe/Vienna).
-  Render's 750 free hours are shared by every free service of the workspace. A service that never sleeps needs 744 hours alone, so one more free service would push the workspace over the limit and Render would suspend them all. About 16 hours a day leaves room.
-- **UptimeRobot** is optional. It cannot be limited to certain hours on the free plan, so use it only if the workspace has no other free service (or pause it).
-- `/api/health` does **not** touch the database. This matters: a monitor that queried the database every five minutes would keep Neon
-  awake all day and use up the 100 compute hours. The page `/api/health/db` exists but is not monitored.
+Render gives **750 free instance hours a month to the whole workspace**, shared by every free service. A service that never sleeps needs 744 hours alone,
+so a second always-on service would push the workspace over the limit and Render would suspend all of them. The demo therefore does two things:
+
+- **A pinger during working hours only.** cron-job.org calls `GET https://<your-service>.onrender.com/api/health` every 10 minutes, Monday to Friday, from 07:00 to 18:50
+  (cron `*/10 7-18 * * 1-5`, time zone Europe/Vienna). That is about 270 hours a month. People who read applications during the day find the demo awake.
+- **A waking-up page for everybody else.** `site/index.html` is published on GitHub Pages (https://vladimirmilivojevic-creator.github.io/valitrack/). It asks `/api/health` every few seconds, shows the progress,
+  and opens the app as soon as the server answers. The README links to this page, so a visit at night or at the weekend costs a minute of waiting but no broken first impression.
+  Only a visit starts the server, so unused hours are not spent.
+
+Rules of thumb for several free projects in one workspace: give each project a pinger window and a waking-up page, and keep the sum of the windows below about 500 hours a month.
+UptimeRobot cannot be limited to certain hours on the free plan, so it is not used for this.
+
+- `/api/health` does **not** touch the database, and it answers `HEAD` requests too (many monitors use them). This matters: a monitor that queried the database every few minutes would keep Neon
+  awake all day and use up its 100 compute hours. The page `/api/health/db` exists but is not monitored.
 - **Daily reset.** The app resets its own demo data. A background thread checks every ten minutes and, between 06:00 and 08:00
-  Vienna time, reloads the demo data once per day (it compares today's date with the time the data was loaded). The first ping of the morning wakes the app,
+  Vienna time, reloads the demo data once per day (it compares today's date with the time the data was loaded). The first ping of the working day (07:00) wakes the app,
   so the reset happens before the first visitors. It needs no external job and no secret.
   Visitors who changed things do not leave a mess. The reset empties the append-only tables, which is allowed only here: the code path exists only when `DEMO_MODE=true`.
 - A reset can also be started by hand: `POST /api/demo/reset` with the header `X-Reset-Token: <DEMO_RESET_TOKEN>`. It answers at once and works in a background thread.

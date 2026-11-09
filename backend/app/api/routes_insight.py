@@ -1,6 +1,7 @@
 from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, Depends, Header, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
@@ -27,8 +28,9 @@ router = APIRouter(prefix="/api", tags=["insight"])
 @router.api_route("/health", methods=["GET", "HEAD"])
 def health():
     """No database access on purpose: the uptime monitor calls this every few minutes and must not keep a
-    serverless database awake all day."""
-    return {"status": "ok"}
+    serverless database awake all day. The answer may be read from any web page, so the small "waking up"
+    page of the demo can ask whether the server is ready."""
+    return JSONResponse({"status": "ok"}, headers={"Access-Control-Allow-Origin": "*"})
 
 
 @router.api_route("/health/db", methods=["GET", "HEAD"])
