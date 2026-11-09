@@ -7,8 +7,7 @@ the free server awake. Free tiers change, so check the current limits before you
 flowchart LR
     G[GitHub<br/>main branch] -->|CI passes| R[Render web service<br/>Docker, free plan]
     R -->|SQL over TLS| N[(Neon PostgreSQL<br/>free plan)]
-    M1[UptimeRobot<br/>every 5 minutes] -.->|GET /api/health| R
-    M2[cron-job.org<br/>every 10 minutes] -.->|GET /api/health| R
+    M[cron-job.org<br/>every 10 minutes, 06:30 to 22:50] -.->|GET /api/health| R
 ```
 
 ## 1. Database on Neon
@@ -31,21 +30,22 @@ Free plan facts used here: autosuspend after five idle minutes, wake-up in a few
 |---|---|
 | `DATABASE_URL` | Neon connection string |
 | `SECRET_KEY` | Signs the session cookies |
-| `DEMO_MODE` | `true` shows the demo accounts on the login page, shortens the lockout and turns on the nightly reset |
+| `DEMO_MODE` | `true` shows the demo accounts on the login page, shortens the lockout and turns on the daily reset |
 | `DEMO_AUTO_RESET` | `true` by default. Set `false` to switch the nightly reset off |
 | `DEMO_RESET_TOKEN` | Secret for `POST /api/demo/reset` |
 | `COOKIE_SECURE` | `true` on HTTPS |
 
 ## 3. Keeping it awake
 
-- **UptimeRobot**, HTTP monitor, `GET https://<your-service>.onrender.com/api/health`, every 5 minutes.
-- **cron-job.org** as a second, independent pinger, every 10 minutes, same URL.
+- **cron-job.org**, `GET https://<your-service>.onrender.com/api/health`, every 10 minutes, **only from 06:30 to 22:50** (cron `*/10 6-22 * * *`, time zone Europe/Vienna).
+  Render's 750 free hours are shared by every free service of the workspace. A service that never sleeps needs 744 hours alone, so one more free service would push the workspace over the limit and Render would suspend them all. About 16 hours a day leaves room.
+- **UptimeRobot** is optional. It cannot be limited to certain hours on the free plan, so use it only if the workspace has no other free service (or pause it).
 - `/api/health` does **not** touch the database. This matters: a monitor that queried the database every five minutes would keep Neon
   awake all day and use up the 100 compute hours. The page `/api/health/db` exists but is not monitored.
-- **Nightly reset.** The app resets its own demo data. A background thread checks every ten minutes and, between 03:00 and 05:00
-  Vienna time, reloads the demo data once per day (it compares today's date with the time the data was loaded). It needs no external job and no secret.
-  Visitors who changed things do not leave a mess, and the monitors keep the app awake so it is there at night.
-  The reset empties the append-only tables, which is allowed only here: the code path exists only when `DEMO_MODE=true`.
+- **Daily reset.** The app resets its own demo data. A background thread checks every ten minutes and, between 06:00 and 08:00
+  Vienna time, reloads the demo data once per day (it compares today's date with the time the data was loaded). The first ping of the morning wakes the app,
+  so the reset happens before the first visitors. It needs no external job and no secret.
+  Visitors who changed things do not leave a mess. The reset empties the append-only tables, which is allowed only here: the code path exists only when `DEMO_MODE=true`.
 - A reset can also be started by hand: `POST /api/demo/reset` with the header `X-Reset-Token: <DEMO_RESET_TOKEN>`. It answers at once and works in a background thread.
 
 ## Running it yourself

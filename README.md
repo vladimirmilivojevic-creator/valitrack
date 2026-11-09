@@ -25,8 +25,8 @@
 
 </div>
 
-> The live demo runs on a free server. If nobody used it for a while, the first page can take up to a minute to open.
-> After that it is fast. All data in it is invented.
+> The live demo runs on a free server that sleeps at night (about 23:00 to 06:30 Vienna time) to stay inside the free hours.
+> The first page after a pause can take up to a minute to open. After that it is fast. All data in it is invented.
 
 ---
 

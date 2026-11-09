@@ -112,7 +112,7 @@ def test_scheduled_reset_endpoint_reloads_the_demo(db):
     assert db.scalar(select(func.count()).select_from(Application)) == 6
 
 
-def test_the_app_resets_its_own_demo_only_at_night_and_only_once_a_day(db, people):
+def test_the_app_resets_its_own_demo_only_in_the_morning_and_only_once_a_day(db, people):
     from datetime import timedelta
 
     from app.models import AuditEntry
@@ -121,10 +121,10 @@ def test_the_app_resets_its_own_demo_only_at_night_and_only_once_a_day(db, peopl
 
     make_application(db, people)
     loaded = db.scalar(select(func.min(AuditEntry.occurred_at))).astimezone(VIENNA)
-    next_night = (loaded + timedelta(days=1)).replace(hour=3, minute=30)
-    assert needs_reset(db, next_night) is True
-    assert needs_reset(db, next_night.replace(hour=12)) is False  # daytime: leave the visitors alone
-    assert needs_reset(db, loaded.replace(hour=3, minute=30)) is False  # data from today is fresh enough
+    next_morning = (loaded + timedelta(days=1)).replace(hour=6, minute=30)
+    assert needs_reset(db, next_morning) is True
+    assert needs_reset(db, next_morning.replace(hour=12)) is False  # daytime: leave the visitors alone
+    assert needs_reset(db, loaded.replace(hour=6, minute=30)) is False  # data from today is fresh enough
 
 
 def test_an_empty_database_is_left_to_the_start_script(db):
@@ -132,4 +132,4 @@ def test_an_empty_database_is_left_to_the_start_script(db):
 
     from app.services.demo_scheduler import VIENNA, needs_reset
 
-    assert needs_reset(db, datetime(2026, 11, 10, 3, 30, tzinfo=VIENNA)) is False
+    assert needs_reset(db, datetime(2026, 11, 10, 6, 30, tzinfo=VIENNA)) is False

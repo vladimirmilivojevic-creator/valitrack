@@ -94,7 +94,7 @@ export default function Login() {
             </ul>
             <p className="small muted" style={{ marginTop: 10 }}>
               All demo accounts share the password <code>{demo.data.password}</code>. Signatures ask for it again.
-              The data is reset every night.
+              The data is reset every morning.
             </p>
           </div>
         )}

@@ -1,7 +1,8 @@
 """Nightly reset of the public demo, done by the app itself.
 
-The free host keeps the app awake with the uptime monitors, so a small background thread can reset the
-demo between 03:00 and 05:00 Vienna time, once per day. No external cron job and no secret is needed.
+The uptime pinger runs from the early morning to the evening only (the free host has a limit of 750 instance
+hours a month for the whole workspace), so the app wakes up around 06:30. A small background thread then resets
+the demo once per day between 06:00 and 08:00 Vienna time, before the first visitors. No external cron job and no secret is needed.
 The check is cheap: it only reads the time of the first audit entry (the moment the demo data was loaded).
 """
 
@@ -21,14 +22,14 @@ from app.models import AuditEntry
 log = logging.getLogger("valitrack.demo")
 
 VIENNA = ZoneInfo("Europe/Vienna")
-RESET_HOURS = (3, 4)
+RESET_HOURS = (6, 7)
 CHECK_EVERY_SECONDS = 600
 
 _lock = threading.Lock()
 
 
 def needs_reset(db: Session, now: datetime | None = None) -> bool:
-    """True when it is night in Vienna and the demo data was loaded on an earlier day."""
+    """True when it is early morning in Vienna and the demo data was loaded on an earlier day."""
     now = (now or datetime.now(VIENNA)).astimezone(VIENNA)
     if now.hour not in RESET_HOURS:
         return False
