@@ -1,5 +1,7 @@
 """Training sessions and training records per application version."""
 
+from datetime import UTC, datetime, time
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -73,6 +75,10 @@ def complete_session(db: Session, user: User, password: str, session: TrainingSe
                                     "attended": sorted(attended_ids)}),
     )
     now = utcnow()
+    # People were trained on the day of the session, even when the attendance is confirmed later.
+    trained_on = datetime.combine(session.session_date, time(9, 0), tzinfo=UTC)
+    if trained_on > now:
+        trained_on = now
     for user_id, attendee in attendees.items():
         attendee.attended = user_id in attended_ids
     for user_id in attended_ids:
@@ -82,7 +88,7 @@ def complete_session(db: Session, user: User, password: str, session: TrainingSe
             record = TrainingRecord(application_id=application.id, app_version_id=version.id, user_id=user_id)
             db.add(record)
         record.status = "completed"
-        record.completed_at = now
+        record.completed_at = trained_on
         record.session_id = session.id
     session.status = "completed"
     session.completed_at = now

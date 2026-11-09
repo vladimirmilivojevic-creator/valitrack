@@ -7,6 +7,23 @@ import { fmtDateTime, titleCase } from "../lib/format";
 import { useAuth } from "../lib/auth";
 import type { Dashboard as DashboardData } from "../lib/types";
 
+const WHAT: Record<string, string> = {
+  sign: "signed",
+  status_change: "moved",
+  complete: "completed",
+  review: "reviewed",
+  validate: "validated",
+  supersede: "superseded",
+  approve_urs: "approved the requirements of",
+  approve: "approved",
+  close: "closed",
+  accept: "accepted",
+  resolve: "resolved",
+  generate: "generated",
+  assess: "assessed",
+  plan_tests: "planned the tests of",
+};
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { data, error, isLoading } = useQuery({ queryKey: ["dashboard"], queryFn: () => api.get<DashboardData>("/dashboard") });
@@ -94,7 +111,7 @@ export default function Dashboard() {
           <ul className="activity">
             {data.activity.slice(0, 8).map((e) => (
               <li key={e.seq}>
-                <strong>{e.actor_name}</strong> {titleCase(e.action).toLowerCase()}{" "}
+                <strong>{e.actor_name}</strong> {WHAT[e.action] ?? titleCase(e.action).toLowerCase()}{" "}
                 <span className="id">{e.entity_label ?? e.entity_type}</span>
                 <time>{fmtDateTime(e.occurred_at)}</time>
               </li>

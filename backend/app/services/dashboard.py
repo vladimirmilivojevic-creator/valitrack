@@ -17,6 +17,10 @@ from app.services.gate import evaluate_release_gate
 
 STAGES = ("requirements", "testing", "report", "release", "validated")
 
+# The activity feed shows the steps that matter to a quality engineer, not every edit or login.
+FEED_ACTIONS = ("sign", "status_change", "complete", "review", "validate", "supersede", "approve_urs",
+                "approve", "close", "accept", "resolve", "generate", "assess", "plan_tests")
+
 
 def _stage(db: Session, version: AppVersion) -> tuple[str, int]:
     """Where the version is in the lifecycle, and how many gate checks are still open."""
@@ -77,8 +81,7 @@ def attention(db: Session) -> dict:
 
 
 def recent_activity(db: Session, limit: int = 12) -> list[dict]:
-    quiet = ("login", "password_failed", "account_locked")
-    rows = db.scalars(select(AuditEntry).where(AuditEntry.action.not_in(quiet))
+    rows = db.scalars(select(AuditEntry).where(AuditEntry.action.in_(FEED_ACTIONS))
                       .order_by(AuditEntry.seq.desc()).limit(limit))
     return [to_jsonable({
         "seq": e.seq, "occurred_at": e.occurred_at, "actor_name": e.actor_name, "action": e.action,
