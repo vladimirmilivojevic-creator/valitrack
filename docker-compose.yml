@@ -1,0 +1,32 @@
+# For anybody who wants to run ValiTrack on their own machine: docker compose up
+# Then open http://localhost:8000 and sign in with one of the demo accounts.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: valitrack
+      POSTGRES_PASSWORD: valitrack
+      POSTGRES_DB: valitrack
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U valitrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://valitrack:valitrack@db:5432/valitrack
+      SECRET_KEY: local-development-secret-change-me
+      DEMO_MODE: "true"
+      DEMO_RESET_TOKEN: local-reset-token
+    ports:
+      - "8000:8000"
+
+volumes:
+  dbdata:

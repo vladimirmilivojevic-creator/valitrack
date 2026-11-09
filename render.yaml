@@ -1,0 +1,23 @@
+# Render blueprint: one free web service built from the Dockerfile.
+# The database lives at Neon; its connection string is entered in the Render dashboard.
+services:
+  - type: web
+    name: valitrack
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEMO_MODE
+        value: "true"
+      - key: DEMO_RESET_TOKEN
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
