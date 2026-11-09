@@ -129,15 +129,16 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-      - name: Run the browser tests
-        working-directory: frontend
-        run: npx playwright test
-      - name: Take the screenshots for the README
+      - name: Take the screenshots for the README (fresh demo data)
         if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         working-directory: frontend
         env:
           E2E_SCREENSHOTS: "1"
-        run: npx playwright test screenshots.spec.ts
+        run: npx playwright test screenshots.spec.ts --retries=0
+      - name: Run the browser tests
+        working-directory: frontend
+        run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -148,7 +149,7 @@ jobs:
             server.log
           retention-days: 5
       - uses: actions/upload-artifact@v4
-        if: github.ref == 'refs/heads/main'
+        if: always() && github.ref == 'refs/heads/main'
         with:
           name: screenshots
           path: docs/screenshots

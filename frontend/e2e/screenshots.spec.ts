@@ -11,7 +11,7 @@ test("take the README screenshots", async ({ page }) => {
   test.setTimeout(180_000);
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/login");
-  await expect(page.getByText("Demo accounts")).toBeVisible();
+  await expect(page.getByText(/^Demo accounts\./)).toBeVisible();
   await page.screenshot(out("login"));
 
   await signInAs(page, "Sophie Gruber");
