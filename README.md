@@ -184,7 +184,7 @@ Without Docker you need PostgreSQL 14 or newer, Python 3.12 and Node 22. Steps a
 
 ## Tests
 
-About 150 backend tests run against a real PostgreSQL, because triggers, views and generated columns are part of what is tested.
+More than 130 backend tests run against a real PostgreSQL, because triggers, views and generated columns are part of what is tested.
 GitHub Actions also runs type checks, lint, unit tests, a production build, Playwright browser tests and a Docker build on every push.
 
 ```bash

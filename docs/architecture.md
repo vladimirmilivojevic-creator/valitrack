@@ -132,7 +132,7 @@ The trade-off is that the schema is plain SQL (`backend/db/*.sql`) and the SQLAl
 
 ## Testing
 
-- **Backend:** about 150 tests on a real PostgreSQL (triggers, views and generated columns are part of what is tested).
+- **Backend:** more than 130 tests on a real PostgreSQL (triggers, views and generated columns are part of what is tested).
   Rules, audit trail, signatures, release gate, change control, permissions of every route, PDF content, SQL reports, demo data.
 - **Frontend:** type check, lint, unit tests for the formatting rules, the API client and the signature dialog.
 - **End to end:** Playwright drives the real app: sign in, run a test, sign, review as a second person, verify the audit trail.

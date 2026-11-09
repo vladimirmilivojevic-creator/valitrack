@@ -11,7 +11,7 @@ export async function signInAs(page: Page, fullName: string) {
 
 export async function sign(page: Page, buttonName: RegExp | string, comment?: string) {
   const dialog = page.getByRole("dialog");
-  if (comment) await dialog.getByLabel(/Comment|Reason|Justification/).fill(comment);
+  if (comment) await dialog.getByLabel(/comment|reason|justification/i).fill(comment);
   await dialog.getByLabel("Password").fill(DEMO_PASSWORD);
   await dialog.getByRole("button", { name: buttonName }).click();
 }
