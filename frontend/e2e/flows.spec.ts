@@ -23,10 +23,10 @@ test("a tester runs a test, signs it, and QA reviews it", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Review reminders and notifications/ })).toBeVisible();
 
   for (const step of [1, 2]) {
-    const group = page.getByRole("group", { name: `Result of step ${step}` });
-    await group.getByRole("button", { name: "Passed" }).click();
-    await page.getByRole("button", { name: "Save result" }).first().click();
-    await expect(page.getByText("Passed").first()).toBeVisible();
+    const card = page.locator(".step-card").nth(step - 1);
+    await card.getByRole("group", { name: `Result of step ${step}` }).getByRole("button", { name: "Passed" }).click();
+    await card.getByRole("button", { name: "Save result" }).click();
+    await expect(card.locator(".chip", { hasText: "Passed" })).toBeVisible();
   }
   await page.getByRole("button", { name: "Complete the run and sign" }).click();
   await sign(page, /^Sign$/);
